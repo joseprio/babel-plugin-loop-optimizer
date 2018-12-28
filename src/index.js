@@ -47,13 +47,13 @@ export default function (babel) {
         }
 
 
-        if (checkName(path) && path.node.arguments.length === 1 && t.isExpression(path.node.arguments[0].body)) {
+        const originalExpression = path.node.arguments[0];
+        if (checkName(path) && path.node.arguments.length === 1 && t.isExpression(originalExpression.body) && originalExpression.params[0].type === 'Identifier') {
           const name = path.node.callee.property.name;
           
           let arrayName = path.node.callee.object.name ? t.identifier(path.node.callee.object.name) : null;
           const resArrName = path.scope.generateUidIdentifier("r");
           const iterator = path.scope.generateUidIdentifier("i");
-          const originalExpression = path.node.arguments[0];
           const action = originalExpression.body;
           
           const resArray = name === "forEach" ? [] : [t.variableDeclaration(
