@@ -51,7 +51,6 @@ export default function (babel) {
           const name = path.node.callee.property.name;
           
           const arrayName = path.scope.generateUidIdentifier("a");
-          const funcName = path.scope.generateUidIdentifier("f");
           const resArrName = path.scope.generateUidIdentifier("r");
           const iterator = path.scope.generateUidIdentifier("i");
           const originalExpression = path.node.arguments[0];
@@ -77,7 +76,7 @@ export default function (babel) {
 
           const forBodyDeclarations = [
             t.variableDeclarator(
-              originalExpression.params[0].name,
+              t.identifier(originalExpression.params[0].name),
               t.memberExpression(arrayName, iterator, true)
             )
           ];
@@ -85,7 +84,7 @@ export default function (babel) {
           if (originalExpression.params[1]) {
             forBodyDeclarations.push(
               t.variableDeclarator(
-                originalExpression.params[1].name,
+                t.identifier(originalExpression.params[1].name),
                 iterator
               )
             );
@@ -93,7 +92,7 @@ export default function (babel) {
           if (originalExpression.params[2]) {
             forBodyDeclarations.push(
               t.variableDeclarator(
-                originalExpression.params[2].name,
+                t.identifier(originalExpression.params[2].name),
                 arrayName
               )
             );
@@ -116,16 +115,6 @@ export default function (babel) {
                 t.variableDeclarator(
                   arrayName,
                   path.node.callee.object
-                )
-              ]
-            ),
-            
-            t.variableDeclaration(
-              "const",
-              [
-                t.variableDeclarator(
-                  funcName,
-                  path.node.arguments[0]
                 )
               ]
             ),
