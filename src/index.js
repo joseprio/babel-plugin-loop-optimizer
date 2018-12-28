@@ -34,13 +34,13 @@ export default function (babel) {
       },
       
       CallExpression(path) {
-        var parent = path.getStatementParent();
+        const parent = path.getStatementParent();
 
         // Don't modify if in ternary
-        let excludeTernary = path.findParent((path) => path.isConditionalExpression());
+        const excludeTernary = path.findParent((path) => path.isConditionalExpression());
         if (excludeTernary) return;
 
-        var comments;
+        const comments;
         if ((comments = parent.node.leadingComments) && comments[comments.length - 1]
             && /^\s*O:\s*KEEP/.test(comments[comments.length - 1].value)) {
           return;
@@ -48,15 +48,15 @@ export default function (babel) {
 
 
         if (checkName(path) && path.node.arguments.length === 1) {
-          var name = path.node.callee.property.name;
+          const name = path.node.callee.property.name;
           
-          var arrayName = path.scope.generateUidIdentifier("a");
-          var funcName = path.scope.generateUidIdentifier("f");
-          var resArrName = path.scope.generateUidIdentifier("r");
+          const arrayName = path.scope.generateUidIdentifier("a");
+          const funcName = path.scope.generateUidIdentifier("f");
+          const resArrName = path.scope.generateUidIdentifier("r");
           
-          var iterator = path.scope.generateUidIdentifier("i");
+          const iterator = path.scope.generateUidIdentifier("i");
 
-          var call = t.callExpression(
+          const call = t.callExpression(
             funcName,
             [
               t.memberExpression(
@@ -69,8 +69,8 @@ export default function (babel) {
             ]
           );
           
-          var resArray = name === "forEach" ? [] : [t.variableDeclaration(
-            "var",
+          const resArray = name === "forEach" ? [] : [t.variableDeclaration(
+            "const",
             [
               t.variableDeclarator(
                 resArrName,
@@ -79,7 +79,7 @@ export default function (babel) {
             ]
           )];
           
-          var expr = t.callExpression(
+          const expr = t.callExpression(
             t.memberExpression(
               resArrName,
               t.identifier("push")
@@ -89,7 +89,7 @@ export default function (babel) {
           
           path.getStatementParent().insertBefore([
             t.variableDeclaration(
-              "var",
+              "const",
               [
                 t.variableDeclarator(
                   arrayName,
@@ -99,7 +99,7 @@ export default function (babel) {
             ),
             
             t.variableDeclaration(
-              "var",
+              "const",
               [
                 t.variableDeclarator(
                   funcName,
@@ -112,7 +112,7 @@ export default function (babel) {
             
             t.forStatement(
               t.variableDeclaration(
-                "var",
+                "let",
                 [
                   t.variableDeclarator(
                     iterator,
