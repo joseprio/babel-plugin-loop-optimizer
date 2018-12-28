@@ -48,7 +48,7 @@ export default function (babel) {
 
 
         const originalExpression = path.node.arguments[0];
-        if (checkName(path) && path.node.arguments.length === 1 && t.isExpression(originalExpression.body) && originalExpression.params[0].type === 'Identifier') {
+        if (checkName(path) && path.node.arguments.length === 1 && (path.node.callee.property.name === 'forEach' || t.isExpression(originalExpression.body)) && originalExpression.params[0].type === 'Identifier') {
           const name = path.node.callee.property.name;
           
           let arrayName = path.node.callee.object.name ? t.identifier(path.node.callee.object.name) : null;
@@ -83,13 +83,13 @@ export default function (babel) {
           }
 
           
-          const expr = t.callExpression(
+          const expr = t.isExpression(action) ? t.callExpression(
             t.memberExpression(
               resArrName,
               t.identifier("push")
             ),
             [ action ]
-          );
+          ) : null;
 
           const forBodyDeclarations = [
             t.variableDeclarator(
@@ -119,11 +119,16 @@ export default function (babel) {
             t.variableDeclaration(
               "const",
               forBodyDeclarations
-            ),
-            t.expressionStatement(
-              name === "forEach" ? action : expr
-            )
-          ];
+            )];
+          if (name === 'forEach') {
+            if (action.type === 'BlockStatement') {
+              forBody.push(...action);
+            } else {
+              forBody.push(t.expressionStatement(action));
+            }
+          } else {
+              forBody.push(t.expressionStatement(expr));
+          }
           
           path.getStatementParent().insertBefore([
             ...resArray,
