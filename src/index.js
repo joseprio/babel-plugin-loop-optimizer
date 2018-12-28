@@ -47,27 +47,15 @@ export default function (babel) {
         }
 
 
-        if (checkName(path) && path.node.arguments.length === 1) {
+        if (checkName(path) && path.node.arguments.length === 1 && t.isExpression(path.node.arguments[0].body)) {
           const name = path.node.callee.property.name;
           
           const arrayName = path.scope.generateUidIdentifier("a");
           const funcName = path.scope.generateUidIdentifier("f");
           const resArrName = path.scope.generateUidIdentifier("r");
-          
           const iterator = path.scope.generateUidIdentifier("i");
-
-          const call = t.callExpression(
-            funcName,
-            [
-              t.memberExpression(
-                arrayName,
-                iterator,
-                true
-              ),
-              iterator,
-              arrayName
-            ]
-          );
+          const originalExpression = path.node.arguments[0];
+          const action = originalExpression.body;
           
           const resArray = name === "forEach" ? [] : [t.variableDeclaration(
             "const",
@@ -84,8 +72,42 @@ export default function (babel) {
               resArrName,
               t.identifier("push")
             ),
-            [ call ]
+            [ action ]
           );
+
+          const forBodyDeclarations = [
+            t.variableDeclarator(
+              originalExpression.params[0].name,
+              t.memberExpression(arrayName, iterator, true)
+            )
+          ];
+
+          if (originalExpression.params[1]) {
+            forBodyDeclarations.push(
+              t.variableDeclarator(
+                originalExpression.params[1].name,
+                iterator
+              )
+            );
+          }
+          if (originalExpression.params[2]) {
+            forBodyDeclarations.push(
+              t.variableDeclarator(
+                originalExpression.params[2].name,
+                arrayName
+              )
+            );
+          }
+
+          const forBody = [
+            t.variableDeclaration(
+              "const",
+              forBodyDeclarations
+            ),
+            t.expressionStatement(
+              name === "forEach" ? action : expr
+            )
+          ];
           
           path.getStatementParent().insertBefore([
             t.variableDeclaration(
@@ -132,9 +154,7 @@ export default function (babel) {
                 '++',
                 iterator
               ),
-              t.expressionStatement(
-                name === "forEach" ? call : expr
-              )
+              t.blockStatement(forBody)
             )
           ]);
           
