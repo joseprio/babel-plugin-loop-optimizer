@@ -40,7 +40,7 @@ export default function (babel) {
         const excludeTernary = path.findParent((path) => path.isConditionalExpression());
         if (excludeTernary) return;
 
-        const comments;
+        let comments;
         if ((comments = parent.node.leadingComments) && comments[comments.length - 1]
             && /^\s*O:\s*KEEP/.test(comments[comments.length - 1].value)) {
           return;
