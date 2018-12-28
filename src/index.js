@@ -50,7 +50,7 @@ export default function (babel) {
         if (checkName(path) && path.node.arguments.length === 1 && t.isExpression(path.node.arguments[0].body)) {
           const name = path.node.callee.property.name;
           
-          const arrayName = path.scope.generateUidIdentifier("a");
+          const arrayName = t.identifier(path.node.callee.object.name);
           const resArrName = path.scope.generateUidIdentifier("r");
           const iterator = path.scope.generateUidIdentifier("i");
           const originalExpression = path.node.arguments[0];
@@ -109,16 +109,6 @@ export default function (babel) {
           ];
           
           path.getStatementParent().insertBefore([
-            t.variableDeclaration(
-              "const",
-              [
-                t.variableDeclarator(
-                  arrayName,
-                  path.node.callee.object
-                )
-              ]
-            ),
-            
             ...resArray,
             
             t.forStatement(
