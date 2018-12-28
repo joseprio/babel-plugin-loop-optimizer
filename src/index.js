@@ -48,7 +48,7 @@ export default function (babel) {
 
 
         const originalExpression = path.node.arguments[0];
-        if (checkName(path) && path.node.arguments.length === 1 && t.isExpression(originalExpression.body) && originalExpression.params[0].type === 'Identifier') {
+        if (checkName(path) && path.node.arguments.length === 1 && (path.node.callee.property.name === 'forEach' || t.isExpression(originalExpression.body)) && originalExpression.params[0].type === 'Identifier') {
           const name = path.node.callee.property.name;
           
           let arrayName = path.node.callee.object.name ? t.identifier(path.node.callee.object.name) : null;
