@@ -122,7 +122,7 @@ export default function (babel) {
             )];
           if (name === 'forEach') {
             if (action.type === 'BlockStatement') {
-              forBody.push(...action);
+              forBody.push(...action.body);
             } else {
               forBody.push(t.expressionStatement(action));
             }
